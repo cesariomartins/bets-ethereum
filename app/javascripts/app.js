@@ -73,20 +73,28 @@ window.lookupPlayer = function() {
 
 function populateGames() {
  Betting.deployed().then(function(contractInstance) {
-  contractInstance.getGames.call().then(function(gamesArray) {
-   for(let i=0; i < gamesArray.length; i++) {
-    /* We store the candidate names as bytes32 on the blockchain. We use the
+    return contractInstance.getGames.call();
+  }).then(function(gamesArray) {
+    for(let i=0; i < gamesArray.length; i++) {
+    /* We store the game names as bytes32 on the blockchain. We use the
      * handy toUtf8 method to convert from bytes32 to string
      */
-    games[web3.toUtf8(gamesArray[i])] = "game-" + i;
-   }
-   setupGameRows();
-   populateGameTokens();
-   populateBetsData();
-   populateTokenData();
+      games[web3.toUtf8(gamesArray[i])] = "game-" + i;
+    }
+    setupGameRows();
+    populateGameTokens();
+    populateBetsData();
+    populateTokenData();
+  }).catch(function(e) {
+    console.log(e);
+  // There was an error! Handle it.
   });
- });
+
+
+
+
 }
+
 
 function setupGameRows() {
   Object.keys(games).forEach(function (g) { 
@@ -107,20 +115,18 @@ function populateGameTokens() {
 }
 
 function populateBetsData() {
-    $("#bets-rows").empty();
-    Betting.deployed().then(function(contractInstance) {
-      contractInstance.getNumBets().then(function(n) {
-
-        for (var i = 0; i < n; i++) {
-          //contractInstance.getBetsPositionTokens(i).then(function(v)) {
-          //  $("#games-rows").append(v.toString());
-            //$("#bets-rows").append("<tr><td>" + v.toString() + "</td>");
-          //});
-          $("#bets-rows").append("<tr><td>-</td></tr>");
-        }
-      });
-    });
+ 
+ $("#bets-rows").empty();
+ var numBets = 2;
+ for (var i = 0; i < numBets; i++) {
+  Betting.deployed().then(function(contractInstance) {
+    var j = parseInt(i);
+   contractInstance.getBetAt.call(j).then(function(v) {
+    $("#bets-rows").append("<tr><td>" + v.toString() + "</td>");
+   });
+  });
  }
+}
 
 
 function populateTokenData() {

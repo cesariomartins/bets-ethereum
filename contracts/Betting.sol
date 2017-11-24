@@ -1,4 +1,5 @@
 pragma solidity ^0.4.18; 
+//pragma experimental ABIEncoderV2;
 
 contract Betting {
 
@@ -15,19 +16,21 @@ contract Betting {
     uint[] betsId;
   }
 
+  struct Bet {
+    bytes32 gameId;
+    address playerAddress;
+    uint outcome;
+    uint tokens;
+  }
+
+  Bet[] public bets;
   mapping (address => Player) public players;
   mapping (bytes32 => Game) public games;
   bytes32[] public gamesList;
 
-  bytes32[] public betGameId;
-  address[] public betPlayerAddress;
-  uint[] public betOutcome;
-  uint[] public betTokens;
-
   uint public issuedTokens; 
   uint public usedTokens; 
   uint public tokenPrice;
-  uint public numBets;
 
   function Betting (uint _tokenPrice, bytes32[] _gamesList) public {
     for(uint i = 0; i < _gamesList.length; i++) {
@@ -51,16 +54,17 @@ contract Betting {
     require (games[_gameId].isValue);
     require ((players[msg.sender].issuedTokens - players[msg.sender].usedTokens) >= _tokens);
 
-    betGameId.push(_gameId);
-    betPlayerAddress.push(msg.sender);
-    betOutcome.push(_outcome);
-    betTokens.push(_tokens);
+    bets.push(Bet({
+      gameId: _gameId, 
+      playerAddress: msg.sender, 
+      outcome: _outcome, 
+      tokens:_tokens
+     }));
 
-    players[msg.sender].betsId.push(betPlayerAddress.length);
+    players[msg.sender].betsId.push(bets.length);
     players[msg.sender].usedTokens += _tokens;
     games[_gameId].tokens += _tokens;
     usedTokens += _tokens;
-    numBets++;
   }
 
   function getUsedTokens() view public returns (uint) {
@@ -87,24 +91,12 @@ contract Betting {
     return gamesList;
   }
 
-  function getBetsPositionPlayer(uint i) view public returns (address) {
-    return betPlayerAddress[i];
+  function getBetsCount() view public returns (uint) {
+    return bets.length;
   }
 
-  function getBetsPositionGame(uint i) view public returns (bytes32) {
-    return betGameId[i];
-  }
-
-  function getBetsPositionOutcome(uint i) view public returns (uint) {
-    return betOutcome[i];
-  }
-
-  function getBetsPositionTokens(uint i) view public returns (uint) {
-    return betTokens[i];
-  }
-
-  function getNumBets() view public returns (uint) {
-    return numBets;
+  function getBetAt(uint i) view public returns (bytes32, address, uint, uint) {
+    return (bets[i].gameId, bets[i].playerAddress, bets[i].outcome, bets[i].tokens);
   }
 
   function transferTo(address account) public {
