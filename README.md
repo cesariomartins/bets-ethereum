@@ -1,37 +1,44 @@
-# README #
+### Setup: Ethereum RPC local env
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
-### Test RPC - local blockchain ###
-
-> Install
+```bash
 brew update
 brew install nodejs
-npm install ethereumjs-testrpc web3@0.20.1 solc
 
-> Run
+#using npm
+npm install ethereumjs-testrpc web3@0.20.1 solc
 node_modules/.bin/testrpc
 
-### Truffel ###
+#alternatively, using yarn
+yarn add ethereumjs-testrpc web3@0.20.1 solc
 
+#bonus: https://web3js.readthedocs.io/en/1.0/web3-utils.html
+yarn add web3-utils
+
+#why web3@0.20.1? because web3 is not working
+#see https://github.com/ethereum/web3.js/issues/1070
+
+#check if it is working by running:
+node_modules/.bin/testrpc
+```
+
+#### Setup: Truffle
+
+```bash
+#using npm
 npm install -g truffle
 truffle compile
 
-> Deploy local (testRPC must be running in another terminal)
+#using yarn (locally)
+yarn add truffle
+node_modules/.bin/truffle compile
+
+#deploy locally (testRPC must be running in another terminal)
 truffle migrate --network local
 
-> Deploy testnet https://ropsten.etherscan.io/
+#deploy to testnet https://ropsten.etherscan.io/
 truffle migrate --network dev
 
-> Console
-truffle console --network local
-
-> Node web server
+#run node web server
 npm run dev
-
-
-
-
-Betting.deployed().then(function(contractInstance) {contractInstance.getGames.call().then(function(v) {console.log(v)})})
-
-Betting.deployed().then(function(contractInstance) {contractInstance.getBet.call(2).then(function(v) {console.log(v)})})
+yarn run dev
+```
