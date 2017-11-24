@@ -38,6 +38,9 @@ truffle migrate --network local
 #deploy to testnet https://ropsten.etherscan.io/
 truffle migrate --network dev
 
+#console
+truffle console --network local
+
 #run node web server
 npm run dev
 yarn run dev
