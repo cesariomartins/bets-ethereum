@@ -9,7 +9,7 @@ import betting_artifacts from '../../build/contracts/Betting.json'
 
 let Betting = contract(betting_artifacts);
 
-let games = {}
+let matches = {}
 
 let tokenPrice = null;
 
@@ -24,8 +24,8 @@ window.placeBet = function(candidate) {
 
  Betting.deployed().then(function(contractInstance) {
   contractInstance.placeBet(gameId, betTokens, outcome, {gas: 4700000, from: web3.eth.accounts[0]}).then(function() {
-   let div_id = games[gameId];
-   return contractInstance.getTokensForGame.call(gameId).then(function(v) {
+   let div_id = matches[gameId];
+   return contractInstance.getTokensForMatch.call(gameId).then(function(v) {
     $("#" + div_id).html(v.toString());
     $("#msg").html("");
     populateTokenData();
@@ -71,44 +71,41 @@ window.lookupPlayer = function() {
  });
 }
 
-function populateGames() {
+function populateMatches() {
+ 
  Betting.deployed().then(function(contractInstance) {
-    return contractInstance.getGames.call();
-  }).then(function(gamesArray) {
-    for(let i=0; i < gamesArray.length; i++) {
+    return contractInstance.getMatches.call();
+  }).then(function(matchesArray) {
+    for(let i=0; i < matchesArray.length; i++) {
     /* We store the game names as bytes32 on the blockchain. We use the
      * handy toUtf8 method to convert from bytes32 to string
      */
-      games[web3.toUtf8(gamesArray[i])] = "game-" + i;
+      matches[web3.toUtf8(matchesArray[i])] = "game-" + i;
     }
-    setupGameRows();
-    populateGameTokens();
-    populateBetsData();
+    setupMatchRows();
+    populateMatchTokens();
+    //populateBetsData();
     populateTokenData();
   }).catch(function(e) {
     console.log(e);
   // There was an error! Handle it.
   });
-
-
-
-
 }
 
 
-function setupGameRows() {
-  Object.keys(games).forEach(function (g) { 
-    $("#games-rows").append("<tr><td>" + g + "</td><td id='" + games[g] + "'></td></tr>");
+function setupMatchRows() {
+  Object.keys(matches).forEach(function (g) { 
+    $("#matches-rows").append("<tr><td>" + g + "</td><td id='" + matches[g] + "'></td></tr>");
   });
 }
 
-function populateGameTokens() {
- let gameNames = Object.keys(games);
+function populateMatchTokens() {
+ let gameNames = Object.keys(matches);
  for (var i = 0; i < gameNames.length; i++) {
   let name = gameNames[i];
   Betting.deployed().then(function(contractInstance) {
-   contractInstance.getTokensForGame.call(name).then(function(v) {
-    $("#" + games[name]).html(v.toString());
+   contractInstance.getTokensForMatch.call(name).then(function(v) {
+    $("#" + matches[name]).html(v.toString());
    });
   });
  }
@@ -122,7 +119,7 @@ function populateBetsData() {
   Betting.deployed().then(function(contractInstance) {
     var j = parseInt(i);
    contractInstance.getBetAt.call(j).then(function(v) {
-    $("#bets-rows").append("<tr><td>" + v.toString() + "</td>");
+    $("#bets-rows").append("<tr><td>" + v[0].toString() + "</td>");
    });
   });
  }
@@ -159,6 +156,6 @@ $( document ).ready(function() {
  }
 
  Betting.setProvider(web3.currentProvider);
- populateGames();
+ populateMatches();
 
 });

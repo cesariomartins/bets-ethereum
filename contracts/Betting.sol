@@ -3,8 +3,8 @@ pragma solidity ^0.4.18;
 
 contract Betting {
 
-  struct Game {
-    bytes32 gameId;
+  struct Match {
+    bytes32 matchId;
     uint tokens;
     bool isValue;
   }
@@ -17,27 +17,38 @@ contract Betting {
   }
 
   struct Bet {
-    bytes32 gameId;
+    uint betId;
+    uint timestamp;
+    bytes32 matchId;
     address playerAddress;
     uint outcome;
-    uint tokens;
+    uint amount;
   }
+
+  event NewBet (
+    uint _betId,
+    uint _timestamp,
+    bytes32 _matchId,
+    address _playerAddress,
+    uint _outcome,
+    uint _amount
+  );
 
   Bet[] public bets;
   mapping (address => Player) public players;
-  mapping (bytes32 => Game) public games;
-  bytes32[] public gamesList;
+  mapping (bytes32 => Match) public matches;
+  bytes32[] public matchesList;
 
   uint public issuedTokens; 
   uint public usedTokens; 
   uint public tokenPrice;
 
-  function Betting (uint _tokenPrice, bytes32[] _gamesList) public {
-    for(uint i = 0; i < _gamesList.length; i++) {
-      games[_gamesList[i]].gameId = _gamesList[i];
-      games[_gamesList[i]].isValue = true;
+  function Betting (uint _tokenPrice, bytes32[] _matchesList) public {
+    for(uint i = 0; i < _matchesList.length; i++) {
+      matches[_matchesList[i]].matchId = _matchesList[i];
+      matches[_matchesList[i]].isValue = true;
     }
-    gamesList = _gamesList;
+    matchesList = _matchesList;
     tokenPrice = _tokenPrice;
   }
 
@@ -49,22 +60,28 @@ contract Betting {
     return tokensToBuy;
   }
 
-  function placeBet(bytes32 _gameId, uint _tokens, uint _outcome) public {
+  function placeBet(bytes32 _matchId, uint _amount, uint _outcome) public {
   
-    require (games[_gameId].isValue);
-    require ((players[msg.sender].issuedTokens - players[msg.sender].usedTokens) >= _tokens);
+    require (matches[_matchId].isValue);
+    require ((players[msg.sender].issuedTokens - players[msg.sender].usedTokens) >= _amount);
 
-    bets.push(Bet({
-      gameId: _gameId, 
+    Bet memory b = Bet({
+      betId: bets.length,
+      timestamp: block.timestamp,
+      matchId: _matchId, 
       playerAddress: msg.sender, 
       outcome: _outcome, 
-      tokens:_tokens
-     }));
+      amount: _amount
+     });
+
+    bets.push(b);
 
     players[msg.sender].betsId.push(bets.length);
-    players[msg.sender].usedTokens += _tokens;
-    games[_gameId].tokens += _tokens;
-    usedTokens += _tokens;
+    players[msg.sender].usedTokens += _amount;
+    matches[_matchId].tokens += _amount;
+    usedTokens += _amount;
+
+    NewBet(b.betId, b.timestamp, b.matchId, b.playerAddress, b.outcome, b.amount);
   }
 
   function getUsedTokens() view public returns (uint) {
@@ -83,12 +100,12 @@ contract Betting {
     return (players[_user].issuedTokens, players[_user].betsId);
   }
 
-  function getTokensForGame(bytes32 _gameId) view public returns (uint) {
-    return games[_gameId].tokens;
+  function getTokensForMatch(bytes32 _matchId) view public returns (uint) {
+    return matches[_matchId].tokens;
   }
 
-  function getGames() view public returns (bytes32[]) {
-    return gamesList;
+  function getMatches() view public returns (bytes32[]) {
+    return matchesList;
   }
 
   function getBetsCount() view public returns (uint) {
@@ -96,7 +113,7 @@ contract Betting {
   }
 
   function getBetAt(uint i) view public returns (bytes32, address, uint, uint) {
-    return (bets[i].gameId, bets[i].playerAddress, bets[i].outcome, bets[i].tokens);
+    return (bets[i].matchId, bets[i].playerAddress, bets[i].outcome, bets[i].amount);
   }
 
   function transferTo(address account) public {
