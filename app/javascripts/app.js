@@ -23,36 +23,18 @@ window.placeBet = function(candidate) {
  $("#outcome").val("");
 
  Betting.deployed().then(function(contractInstance) {
-  contractInstance.placeBet(gameId, betTokens, outcome, {gas: 4700000, from: web3.eth.accounts[0]}).then(function() {
+  contractInstance.placeBet(gameId, outcome, {value: web3.toWei(betTokens, 'ether'), gas: 4700000, from: web3.eth.accounts[0]}).then(function() {
    let div_id = matches[gameId];
    return contractInstance.getTokensForMatch.call(gameId).then(function(v) {
     $("#" + div_id).html(v.toString());
     $("#msg").html("");
     populateTokenData();
-
-
-
    });
   });
  });
  populateBetsData();
 }
 
-
-window.buyTokens = function() {
- let tokensToBuy = $("#buy").val();
- let price = tokensToBuy * tokenPrice;
- $("#buy-msg").html("Purchase order has been submitted. Please wait.");
- Betting.deployed().then(function(contractInstance) {
-  contractInstance.buy({value: web3.toWei(price, 'ether'), from: web3.eth.accounts[0]}).then(function(v) {
-   $("#buy-msg").html("");
-   web3.eth.getBalance(contractInstance.address, function(error, result) {
-    $("#contract-balance").html(web3.fromWei(result.toString()) + " Ether");
-   });
-  })
- });
- populateTokenData();
-}
 
 window.lookupPlayer = function() {
  let address = $("#player-address").val();
@@ -84,7 +66,7 @@ function populateMatches() {
     }
     setupMatchRows();
     populateMatchTokens();
-    //populateBetsData();
+    populateBetsData();
     populateTokenData();
   }).catch(function(e) {
     console.log(e);
@@ -105,41 +87,32 @@ function populateMatchTokens() {
   let name = gameNames[i];
   Betting.deployed().then(function(contractInstance) {
    contractInstance.getTokensForMatch.call(name).then(function(v) {
-    $("#" + matches[name]).html(v.toString());
+    $("#" + matches[name]).html(web3.fromWei(v.toString(), 'ether'));
    });
   });
  }
 }
 
 function populateBetsData() {
- 
- $("#bets-rows").empty();
- var numBets = 2;
- for (var i = 0; i < numBets; i++) {
-  Betting.deployed().then(function(contractInstance) {
-    var j = parseInt(i);
-   contractInstance.getBetAt.call(j).then(function(v) {
-    $("#bets-rows").append("<tr><td>" + v[0].toString() + "</td>");
-   });
+  $("#bets-rows").empty();
+  $.getJSON('http://localhost:3000/bets', function(data) {
+    for (var i = 0; i < data.length; i++) {
+      $("#bets-rows").append("<tr>");
+      $("#bets-rows").append("<td>" + data[i].betId + "</td>");
+      $("#bets-rows").append("<td>" + data[i].playerAddress + "</td>");
+      $("#bets-rows").append("<td>" + data[i].matchId + "</td>");
+      $("#bets-rows").append("<td>" + data[i].outcome + "</td>");
+      $("#bets-rows").append("<td>" + web3.fromWei(data[i].amount, 'ether') + "</td>");          
+      $("#bets-rows").append("</tr>");
+    }
   });
- }
 }
 
 
 function populateTokenData() {
  Betting.deployed().then(function(contractInstance) {
-  contractInstance.getIssuedTokens().then(function(v) {
-   $("#tokens-sold").html(v.toString());
-  });
-  contractInstance.getUsedTokens.call().then(function(v) {
-   $("#tokens-used").html(v.toString());
-  });
-  contractInstance.getTokenPrice().then(function(v) {
-   tokenPrice = parseFloat(web3.fromWei(v.toString()));
-   $("#token-cost").html(tokenPrice + " Ether");
-  });
-  web3.eth.getBalance(contractInstance.address, function(error, result) {
-   $("#contract-balance").html(web3.fromWei(result.toString()) + " Ether");
+  contractInstance.getTotalBetAmount().then(function(v) {
+   $("#tokens-sold").html(web3.fromWei(v.toString(), 'ether'));
   });
  });
 }

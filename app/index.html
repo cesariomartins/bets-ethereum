@@ -28,7 +28,7 @@
       <thead>
        <tr>
         <th>Games</th>
-        <th>Used tokens</th>
+        <th>Bets (ether)</th>
        </tr>
       </thead>
       <tbody id="matches-rows">
@@ -37,28 +37,16 @@
     </div>
    </div>
    <div class="col-sm-offset-1 col-sm-4">
-    <h2>Tokens</h2>
+    <h2>Bets</h2>
     <div class="table-responsive">
      <table class="table table-bordered">
       <tr>
-       <th>Tokens Info</th>
+       <th>Total bets</th>
        <th>Value</th>
       </tr>
       <tr>
-       <td>Tokens Sold</td>
+       <td>Bets (ether)</td>
        <td id="tokens-sold"></td>
-      </tr>
-      <tr>
-       <td>Tokens Used</td>
-       <td id="tokens-used"></td>
-      </tr>
-      <tr>
-       <td>Price Per Token</td>
-       <td id="token-cost"></td>
-      </tr>
-      <tr>
-       <td>Balance in the contract</td>
-       <td id="contract-balance"></td>
       </tr>
      </table>
     </div>
@@ -72,23 +60,17 @@
     <input type="text" id="gameId" class="form-control" placeholder="Enter the game"/>
     <br>
     <br>
-    <input type="text" id="bet-tokens" class="form-control" placeholder="Total no. of tokens"/>
+    <input type="text" id="bet-tokens" class="form-control" placeholder="Enter amount of ether"/>
     <br>
     <br>
-    <input type="text" id="outcome" class="form-control" placeholder="Outcome"/>
+    <input type="text" id="outcome" class="form-control" placeholder="Outcome (integer)"/>
     <br>
     <br>
     <a href="#" onclick="placeBet(); return false;" class="btn btn-primary">Bet</a>
    </div>
    <div class="col-sm-offset-1 col-sm-4">
-    <div class="col-sm-12 form">
-     <h2>Purchase Tokens</h2>
-     <div id="buy-msg"></div>
-     <input type="text" id="buy" class="col-sm-8" placeholder="Number of tokens to buy"/> 
-     <a href="#" onclick="buyTokens(); return false;" class="btn btn-primary">Buy</a>
-    </div>
     <div class="col-sm-12 margin-top-3 form">
-     <h2 class="">Lookup Voter Info</h2>
+     <h2 class="">Lookup player Info</h2>
      <input type="text" id="player-address", class="col-sm-8" placeholder="Player address" /> 
      <a href="#" onclick="lookupPlayer(); return false;" class="btn btn-primary">Lookup</a>
      <div class="voter-details row text-left">
@@ -103,6 +85,7 @@
      <table class="table table-bordered">
       <thead>
        <tr>
+        <th>Match Id</th>
         <th>Player Address</th>
         <th>Game</th>
         <th>Outcome</th>
@@ -117,6 +100,6 @@
  </div>
 
 </body>
-<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="app.js"></script>
 </html>

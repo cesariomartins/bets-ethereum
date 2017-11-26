@@ -40,8 +40,16 @@ truffle migrate --network dev
 
 #console
 truffle console --network local
+```
+
+#### Running: node as web server
+
+```bash
+#run server.js to get api running ("http://localhost:3000")
+node_modules/.bin/nodemon server.js
 
 #run node web server
 npm run dev
 yarn run dev
+
 ```

@@ -5,14 +5,13 @@ contract Betting {
 
   struct Match {
     bytes32 matchId;
-    uint tokens;
+    uint betAmount;
     bool isValue;
   }
 
   struct Player {
     address playerAddress;
-    uint issuedTokens;
-    uint usedTokens;
+    uint betAmount;
     uint[] betsId;
   }
 
@@ -38,32 +37,21 @@ contract Betting {
   mapping (address => Player) public players;
   mapping (bytes32 => Match) public matches;
   bytes32[] public matchesList;
+  uint public totalBetAmount;
 
-  uint public issuedTokens; 
-  uint public usedTokens; 
-  uint public tokenPrice;
+  address owner;
 
-  function Betting (uint _tokenPrice, bytes32[] _matchesList) public {
+  function Betting (bytes32[] _matchesList) public {
+    owner = msg.sender;
     for(uint i = 0; i < _matchesList.length; i++) {
       matches[_matchesList[i]].matchId = _matchesList[i];
       matches[_matchesList[i]].isValue = true;
     }
     matchesList = _matchesList;
-    tokenPrice = _tokenPrice;
   }
 
-  function buy() payable public returns (uint) {
-    uint tokensToBuy = msg.value / tokenPrice;
-    players[msg.sender].playerAddress = msg.sender;
-    players[msg.sender].issuedTokens += tokensToBuy;
-    issuedTokens += tokensToBuy;
-    return tokensToBuy;
-  }
-
-  function placeBet(bytes32 _matchId, uint _amount, uint _outcome) public {
-  
+  function placeBet (bytes32 _matchId, uint _outcome) payable public {
     require (matches[_matchId].isValue);
-    require ((players[msg.sender].issuedTokens - players[msg.sender].usedTokens) >= _amount);
 
     Bet memory b = Bet({
       betId: bets.length,
@@ -71,37 +59,28 @@ contract Betting {
       matchId: _matchId, 
       playerAddress: msg.sender, 
       outcome: _outcome, 
-      amount: _amount
+      amount: msg.value
      });
 
-    bets.push(b);
-
     players[msg.sender].betsId.push(bets.length);
-    players[msg.sender].usedTokens += _amount;
-    matches[_matchId].tokens += _amount;
-    usedTokens += _amount;
+    players[msg.sender].betAmount += msg.value;
+    bets.push(b);
+    matches[_matchId].betAmount += msg.value;
+    totalBetAmount += msg.value;
 
     NewBet(b.betId, b.timestamp, b.matchId, b.playerAddress, b.outcome, b.amount);
   }
 
-  function getUsedTokens() view public returns (uint) {
-    return usedTokens;
-  }
-
-  function getIssuedTokens() view public returns (uint) {
-    return issuedTokens;
-  }
-
-  function getTokenPrice() view public returns (uint) {
-    return tokenPrice;
+  function getTotalBetAmount() view public returns (uint) {
+    return totalBetAmount;
   }
 
   function getPlayer(address _user) view public returns (uint, uint[]) {
-    return (players[_user].issuedTokens, players[_user].betsId);
+    return (players[_user].betAmount, players[_user].betsId);
   }
 
   function getTokensForMatch(bytes32 _matchId) view public returns (uint) {
-    return matches[_matchId].tokens;
+    return matches[_matchId].betAmount;
   }
 
   function getMatches() view public returns (bytes32[]) {
@@ -112,12 +91,13 @@ contract Betting {
     return bets.length;
   }
 
-  function getBetAt(uint i) view public returns (bytes32, address, uint, uint) {
-    return (bets[i].matchId, bets[i].playerAddress, bets[i].outcome, bets[i].amount);
+  function getBetAt(uint _i) view public returns (bytes32, address, uint, uint) {
+    return (bets[_i].matchId, bets[_i].playerAddress, bets[_i].outcome, bets[_i].amount);
   }
 
-  function transferTo(address account) public {
-    account.transfer(this.balance);
+  function transferTo(address _account) public {
+    require(msg.sender == owner);
+    _account.transfer(this.balance);
   }
 
 }
