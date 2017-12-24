@@ -6,7 +6,7 @@ contract Betting {
   struct Match {
     bytes32 matchId;
     uint betAmount;
-    bool isValue;
+    bool isValid;
   }
 
   struct Player {
@@ -45,13 +45,13 @@ contract Betting {
     owner = msg.sender;
     for(uint i = 0; i < _matchesList.length; i++) {
       matches[_matchesList[i]].matchId = _matchesList[i];
-      matches[_matchesList[i]].isValue = true;
+      matches[_matchesList[i]].isValid = true;
     }
     matchesList = _matchesList;
   }
 
   function placeBet (bytes32 _matchId, uint _outcome) payable public {
-    require (matches[_matchId].isValue);
+    require (matches[_matchId].isValid);
 
     Bet memory b = Bet({
       betId: bets.length,

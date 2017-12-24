@@ -9,6 +9,12 @@ module.exports = {
       network_id: "*",
       gas: 4700000
     },
+    ganache: {
+      host: "localhost", 
+      port: 7545,
+      network_id: "*",
+      gas: 4700000
+    },
     dev: {
       host: '54.232.215.98',
       port: 8545,
